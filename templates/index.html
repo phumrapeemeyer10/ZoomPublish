@@ -1,0 +1,89 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <!-- Dependencies for client view and component view -->
+    <script src="https://source.zoom.us/3.1.0/lib/vendor/react.min.js"></script>
+    <script src="https://source.zoom.us/3.1.0/lib/vendor/react-dom.min.js"></script>
+    <script src="https://source.zoom.us/3.1.0/lib/vendor/redux.min.js"></script>
+    <script src="https://source.zoom.us/3.1.0/lib/vendor/redux-thunk.min.js"></script>
+    <script src="https://source.zoom.us/3.1.0/lib/vendor/lodash.min.js"></script>
+
+    <!-- CDN for component view -->
+    <script src="https://source.zoom.us/zoom-meeting-embedded-3.1.0.min.js"></script>
+    <!-- CDN for signature encryption -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jsrsasign/10.5.24/jsrsasign-all-min.js"></script>
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='CSS/styles.css') }}">
+</head>
+<body>
+    <div id="meetingSDKElement">
+        <!-- Zoom Meeting SDK Rendered Here -->
+     </div>
+     <script>
+        const client = ZoomMtgEmbedded.createClient()
+        let meetingSDKElement = document.getElementById('meetingSDKElement')
+     </script>
+
+     <script>
+        
+// https://www.npmjs.com/package/jsrsasign
+
+        function generateSignature(key, secret, meetingNumber, role) {
+
+        const iat = Math.round(new Date().getTime() / 1000) - 30
+        const exp = iat + 60 * 60 * 2
+        const oHeader = { alg: 'HS256', typ: 'JWT' }
+
+        const oPayload = {
+            sdkKey: key,
+            appKey: key,
+            mn: meetingNumber,
+            role: role,
+            iat: iat,
+            exp: exp,
+            tokenExp: exp
+        }
+
+        const sHeader = JSON.stringify(oHeader)
+        const sPayload = JSON.stringify(oPayload)
+        const sdkJWT = KJUR.jws.JWS.sign('HS256', sHeader, sPayload, secret)
+        return sdkJWT
+        }
+
+        client.init({
+            zoomAppRoot: meetingSDKElement,
+            language: 'en-US',
+            patchJsMedia: true,
+            customize: {
+                video: {
+                    popper: {
+                        disableDraggable: true
+                    },
+                    viewSizes: {
+                        default: {
+                        width: 800,
+                        height: 150
+                        }
+                    }
+                }
+            }
+        }).then(() => {
+        client.join({
+            sdkKey: '82Dkg_rSRyM8A7bD3BdA',
+            signature: generateSignature('82Dkg_rSRyM8A7bD3BdA', 'UAQUB8042H3nvGJyuoFOXz7cnce8qBa1', 3150105356, 0),
+            meetingNumber: '3150105356',
+            password: '1W6zB8',
+            userName: 'Rooney'
+        }).then(() => {
+            console.log('joined successfully')
+        }).catch((error) => {
+            console.log(error)
+        })
+        }).catch((error) => {
+        console.log(error)
+        })
+     </script>
+</body>
+</html>
